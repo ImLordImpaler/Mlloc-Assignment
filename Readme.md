@@ -14,23 +14,32 @@ The device is registered using the Linux device model and is visible under:
 
 ---
 
-## Design Summary
-
-- Implemented as a **character device**
-- Supports **read-only** operations
-- Read semantics match `/dev/zero`:
-  - Always fills the requested buffer with zeros
-  - Never returns EOF
-- The device name is provided dynamically using a kernel parameter
-- sysfs is used only for device visibility and registration, not for data I/O
-
----
-
-## Requirements
-
-- Linux system with kernel headers installed
-- Build tools (`gcc`, `make`)
-
-On Ubuntu:
+## How to install/test
 ```bash
+#ssh to ec2 instance:
+# Install all dependencies
+sudo apt update
 sudo apt install build-essential linux-headers-$(uname -r)
+
+# Clone repo
+git clone https://github.com/ImLordImpaler/Mlloc-Assignment.git
+
+# Go into project directory
+cd Mlloc-Assignment
+
+make # Build the module
+
+sudo insmod zero_device.ko zero_device_name=my_zero_device # Load the module
+
+dmesg | tail # Check logs to verify
+
+ls /sys/class/zero_device_class/ # Verify sysfs
+
+dd if=/dev/my_zero_device of=test.bin bs=1K count=2  #Test like /dev/zero
+hexdump -C test.bin
+
+#output should be 00 
+
+# Cleanup to remove the device
+sudo rmmod zero_device
+dmesg | tail # zero_device: unloaded

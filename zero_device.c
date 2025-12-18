@@ -36,24 +36,25 @@
                           char __user *buf,
                           size_t count,
                           loff_t *offset)
- {
-     char *kbuf;
- 
-     if (count == 0)
-         return 0;
- 
-     kbuf = kzalloc(count, GFP_KERNEL);
-     if (!kbuf)
-         return -ENOMEM;
- 
-     if (copy_to_user(buf, kbuf, count)) {~
-         kfree(kbuf);
-         return -EFAULT;
-     }
- 
-     kfree(kbuf);
-     return count;
- }
+{
+char *kbuf;
+
+if (count == 0)
+    return 0;
+
+kbuf = kzalloc(count, GFP_KERNEL);
+if (!kbuf)
+    return -ENOMEM;
+
+/* copy_to_user does not return a value on newer kernels */
+if (copy_to_user(buf, kbuf, count)) {
+    kfree(kbuf);
+    return -EFAULT;
+}
+
+kfree(kbuf);
+return count;
+}
  
  static const struct file_operations zero_fops = {
      .owner = THIS_MODULE,
